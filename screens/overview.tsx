@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ollama from 'ollama';
 import OpenAI from 'openai';
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
@@ -41,7 +42,6 @@ const ChatScreen = () => {
   }, []);
 
   const handleChat = async () => {
-    // Remove the model parameter
     try {
       let completion;
       if (selectedModel === 'openai') {
@@ -76,9 +76,29 @@ const ChatScreen = () => {
               },
             ],
           });
-        } else {
-          // If userInput is empty or whitespace, do nothing
-          return;
+        }
+      } else if (selectedModel === 'ollama') {
+        // Use selectedModel instead of the model parameter
+        if (userInput.trim() !== '') {
+          // Check if userInput is not empty or whitespace
+          const response = await fetch('http://localhost:11434/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'llama3',
+              messages: [
+                {
+                  role: 'user',
+                  content: userInput,
+                },
+              ],
+            }),
+          });
+
+          const data = response;
+          console.log('Response from Ollama:', data); // Log the response from Ollama
         }
       }
 
@@ -124,7 +144,9 @@ const ChatScreen = () => {
       <View style={styles.buttonContainer}>
         <Button title="ChatGPT" onPress={() => setSelectedModel('openai')} />
         <Button title="Claude" onPress={() => setSelectedModel('anthropic')} />
+        <Button title="Ollama" onPress={() => setSelectedModel('ollama')} />
       </View>
+      <Text style={styles.selectedModelHeader}>{selectedModel}</Text>
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -151,6 +173,10 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     paddingBottom: 30,
     paddingHorizontal: 20,
+  },
+  selectedModelHeader: {
+    fontWeight: 'bold',
+    fontSize: 24,
   },
   messageContainer: {
     padding: 10,
