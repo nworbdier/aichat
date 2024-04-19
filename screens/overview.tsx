@@ -1,9 +1,17 @@
 import Anthropic from '@anthropic-ai/sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ollama from 'ollama';
+import axios from 'axios';
 import OpenAI from 'openai';
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  StyleSheet,
+  KeyboardAvoidingView,
+} from 'react-native';
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
@@ -44,6 +52,7 @@ const ChatScreen = () => {
   const handleChat = async () => {
     try {
       let completion;
+      let response;
       if (selectedModel === 'openai') {
         // Use selectedModel instead of the model parameter
         completion = await openai.chat.completions.create({
@@ -78,28 +87,17 @@ const ChatScreen = () => {
           });
         }
       } else if (selectedModel === 'ollama') {
-        // Use selectedModel instead of the model parameter
-        if (userInput.trim() !== '') {
-          // Check if userInput is not empty or whitespace
-          const response = await fetch('http://localhost:11434/api/chat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+        // Make request to ollama API
+        response = await axios.post('http://localhost:11434/api/chat', {
+          model: 'llama3',
+          messages: [
+            {
+              role: 'user',
+              content: userInput,
             },
-            body: JSON.stringify({
-              model: 'llama3',
-              messages: [
-                {
-                  role: 'user',
-                  content: userInput,
-                },
-              ],
-            }),
-          });
-
-          const data = response;
-          console.log('Response from Ollama:', data); // Log the response from Ollama
-        }
+          ],
+          stream: false,
+        });
       }
 
       const newMessage = {
@@ -107,10 +105,19 @@ const ChatScreen = () => {
         content: userInput,
       };
 
-      const responseMessage = {
-        user: false,
-        content: completion.choices[0].message.content,
-      };
+      let responseMessage;
+      if (selectedModel === 'ollama') {
+        // Use response directly for 'ollama' model
+        responseMessage = {
+          user: false,
+          content: response.data.message.content,
+        };
+      } else {
+        responseMessage = {
+          user: false,
+          content: completion.choices[0].message.content,
+        };
+      }
 
       const updatedMessages = [...messages, newMessage, responseMessage];
       setMessages(updatedMessages);
@@ -140,30 +147,32 @@ const ChatScreen = () => {
   );
 
   return (
-    <View style={styles.content}>
-      <View style={styles.buttonContainer}>
-        <Button title="ChatGPT" onPress={() => setSelectedModel('openai')} />
-        <Button title="Claude" onPress={() => setSelectedModel('anthropic')} />
-        <Button title="Ollama" onPress={() => setSelectedModel('ollama')} />
-      </View>
-      <Text style={styles.selectedModelHeader}>{selectedModel}</Text>
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-      />
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={userInput}
-          onChangeText={setUserInput}
-          placeholder="Type your message here..."
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <View style={styles.content}>
+        <View style={styles.buttonContainer}>
+          <Button title="ChatGPT" onPress={() => setSelectedModel('openai')} />
+          <Button title="Claude" onPress={() => setSelectedModel('anthropic')} />
+          <Button title="Ollama" onPress={() => setSelectedModel('ollama')} />
+        </View>
+        <Text style={styles.selectedModelHeader}>{selectedModel}</Text>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
         />
-        <Button title="Send" onPress={handleChat} />
-        <Button title="Clear" onPress={handleClearChat} />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={userInput}
+            onChangeText={setUserInput}
+            placeholder="Type your message here..."
+          />
+          <Button title="Send" onPress={handleChat} />
+          <Button title="Clear" onPress={handleClearChat} />
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
