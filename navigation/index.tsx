@@ -32,9 +32,7 @@ export default function RootStack() {
             <Stack.Screen
               name="Details"
               component={Details}
-              options={({ navigation }) => ({
-                headerLeft: () => <BackButton onPress={navigation.goBack} />,
-              })}
+              options={{ headerShown: false }} // Set headerShown to false
             />
           </Stack.Navigator>
         </NavigationContainer>

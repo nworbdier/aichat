@@ -6,7 +6,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   FlatList,
   StyleSheet,
   KeyboardAvoidingView,
@@ -20,9 +19,10 @@ const ChatScreen = () => {
   const flatListRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false); // State to control modal visibility
   const [chatHistory, setChatHistory] = useState([]); // State to store the entire chat history
-  const navigation = useNavigation();
   const [isSendingDisabled, setIsSendingDisabled] = useState(true); // State to track if sending message is disabled
   const [isClearingDisabled, setIsClearingDisabled] = useState(true); // State to track if clearing chat is disabled
+
+  const navigation = useNavigation();
 
   // Initialize instances with API key
   const openRouterKey = process.env.EXPO_PUBLIC_OPEN_ROUTER_API_KEY;
@@ -32,6 +32,9 @@ const ChatScreen = () => {
     'claude-3-haiku': 'anthropic/claude-3-haiku',
     'llama-3-8b-instruct': 'meta-llama/llama-3-8b-instruct:nitro',
     'codellama-34b-instruct': 'meta-llama/codellama-34b-instruct',
+    'gemini-pro': 'google/gemini-pro',
+    'perplexity-sonar-8x7B': 'perplexity/sonar-medium-chat',
+    'perplexity-sonar-8x7B-online': 'perplexity/sonar-medium-online',
   };
 
   const [selectedModel, setSelectedModel] = useState('llama-3-8b-instruct'); // State to track the selected model
