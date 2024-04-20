@@ -24,10 +24,10 @@ const ChatScreen = () => {
   const openRouterKey = process.env.EXPO_PUBLIC_OPEN_ROUTER_API_KEY;
 
   const models = {
-    ChatGPT: 'openai/gpt-3.5-turbo',
-    Claude: 'anthropic/claude-3-haiku',
-    Llama: 'meta-llama/llama-3-8b-instruct:nitro',
-    CodeLlama: 'meta-llama/codellama-34b-instruct',
+    'gpt-3.5-turbo': 'openai/gpt-3.5-turbo',
+    'claude-3-haiku': 'anthropic/claude-3-haiku',
+    'llama-3-8b-instruct': 'meta-llama/llama-3-8b-instruct:nitro',
+    'codellama-34b-instruct': 'meta-llama/codellama-34b-instruct',
   };
 
   const [selectedModel, setSelectedModel] = useState('Llama'); // State to track the selected model
@@ -126,9 +126,18 @@ const ChatScreen = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View
-      style={[styles.messageContainer, item.user ? styles.userMessage : styles.responseMessage]}>
-      <Text style={styles.messageText}>{item.content}</Text>
+    <View style={{ flexDirection: 'column' }}>
+      <View
+        style={[
+          styles.messageContainer,
+          item.user ? styles.userMessageContainer : styles.responseMessageContainer,
+        ]}>
+        <Text style={[item.user ? styles.userText : styles.responseText]}>{item.content}</Text>
+      </View>
+      <View style={styles.indicatorContainer}>
+        {item.user && <Text style={styles.userIndicator}>You</Text>}
+        {!item.user && <Text style={styles.modelIndicator}>{selectedModel}</Text>}
+      </View>
     </View>
   );
 
@@ -142,6 +151,7 @@ const ChatScreen = () => {
           </TouchableOpacity>
         </View>
         <FlatList
+          showsVerticalScrollIndicator={false}
           ref={flatListRef}
           data={messages}
           renderItem={renderItem}
@@ -223,7 +233,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'column',
     bottom: 0,
-    height: '50%',
+    height: '60%',
     width: '100%',
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
@@ -248,22 +258,40 @@ const styles = StyleSheet.create({
     fontSize: 20,
     paddingVertical: 10,
   },
+  userIndicator: {
+    alignSelf: 'flex-end',
+    color: 'rgba(0, 0, 0, 0.5)',
+    fontSize: 12,
+  },
+  modelIndicator: {
+    alignSelf: 'flex-start',
+    color: 'rgba(0, 0, 0, 0.5)',
+    fontSize: 12,
+  },
+  indicatorContainer: {
+    paddingHorizontal: 5,
+  },
   messageContainer: {
     padding: 10,
-    marginVertical: 5,
     borderRadius: 5,
+    marginVertical: 5,
     maxWidth: '80%',
   },
-  userMessage: {
+  userMessageContainer: {
     alignSelf: 'flex-end',
-    backgroundColor: '#DCF8C6',
+    backgroundColor: '#1F8AFF',
   },
-  responseMessage: {
+  userText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  responseMessageContainer: {
     alignSelf: 'flex-start',
     backgroundColor: 'white',
   },
-  messageText: {
+  responseText: {
     fontSize: 16,
+    color: 'black',
   },
   inputContainer: {
     flexDirection: 'row',
