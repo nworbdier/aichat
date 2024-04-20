@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -19,6 +20,7 @@ const ChatScreen = () => {
   const flatListRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false); // State to control modal visibility
   const [chatHistory, setChatHistory] = useState([]); // State to store the entire chat history
+  const navigation = useNavigation();
 
   // Initialize instances with API key
   const openRouterKey = process.env.EXPO_PUBLIC_OPEN_ROUTER_API_KEY;
@@ -145,9 +147,14 @@ const ChatScreen = () => {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <View style={styles.content}>
         <View style={styles.pickerContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Details', { name: 'Reid' })}
+            style={styles.settingsButton}>
+            <Ionicons name="cog-outline" size={30} color="black" />
+          </TouchableOpacity>
           <Text style={styles.selectedModel}>{selectedModel}</Text>
           <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.pickerButton}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Model ▼</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>▼</Text>
           </TouchableOpacity>
         </View>
         <FlatList
@@ -208,21 +215,26 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
     backgroundColor: '#E5E5EA',
   },
-  flatlist: { marginHorizontal: 20 },
+  flatlist: {
+    marginHorizontal: 20,
+  },
   pickerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-    paddingHorizontal: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+  },
+  settingsButton: {
+    paddingVertical: 8,
+    backgroundColor: '#E5E5EA',
   },
   selectedModel: {
-    fontWeight: 'bold',
-    fontSize: 25,
+    fontSize: 20,
   },
   pickerButton: {
-    paddingHorizontal: 15,
+    width: 30,
+    alignItems: 'center',
     paddingVertical: 8,
     backgroundColor: '#E5E5EA',
     borderRadius: 5,
