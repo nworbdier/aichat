@@ -21,6 +21,8 @@ const ChatScreen = () => {
   const [modalVisible, setModalVisible] = useState(false); // State to control modal visibility
   const [chatHistory, setChatHistory] = useState([]); // State to store the entire chat history
   const navigation = useNavigation();
+  const [isSendingDisabled, setIsSendingDisabled] = useState(true); // State to track if sending message is disabled
+  const [isClearingDisabled, setIsClearingDisabled] = useState(true); // State to track if clearing chat is disabled
 
   // Initialize instances with API key
   const openRouterKey = process.env.EXPO_PUBLIC_OPEN_ROUTER_API_KEY;
@@ -61,6 +63,11 @@ const ChatScreen = () => {
   }, []);
 
   const handleChat = async () => {
+    // Check if userInput is empty
+    if (!userInput.trim()) {
+      return; // Exit function if userInput is empty or contains only whitespace
+    }
+
     try {
       const model = models[selectedModel]; // Get the model based on selectedModel
 
@@ -120,11 +127,22 @@ const ChatScreen = () => {
   };
 
   const handleClearChat = () => {
+    // Check if there are no messages to clear
+    if (messages.length === 0) {
+      return; // Exit function if there are no messages
+    }
+
     // Clear messages from state and AsyncStorage
     setMessages([]);
     AsyncStorage.removeItem('messages');
     // Clear chat history
     setChatHistory([]);
+  };
+
+  const handleInputChange = (text) => {
+    setUserInput(text); // Update the userInput state
+    // Enable or disable sending based on whether text is empty or not
+    setIsSendingDisabled(text.trim() === '');
   };
 
   const renderItem = ({ item }) => (
@@ -142,6 +160,11 @@ const ChatScreen = () => {
       </View>
     </View>
   );
+
+  // Disable clearing chat if there are no messages
+  useEffect(() => {
+    setIsClearingDisabled(messages.length === 0);
+  }, [messages]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
@@ -167,17 +190,17 @@ const ChatScreen = () => {
         />
         <View style={styles.divider} />
         <View style={styles.inputContainer}>
-          <TouchableOpacity onPress={handleClearChat}>
-            <Feather name="trash-2" size={25} color="black" />
+          <TouchableOpacity onPress={handleClearChat} disabled={isClearingDisabled}>
+            <Feather name="trash-2" size={25} color={isClearingDisabled ? 'gray' : 'black'} />
           </TouchableOpacity>
           <TextInput
             style={styles.input}
             value={userInput}
-            onChangeText={setUserInput}
+            onChangeText={handleInputChange}
             placeholder="Type your message here..."
           />
-          <TouchableOpacity onPress={handleChat}>
-            <Feather name="send" size={25} color="black" />
+          <TouchableOpacity onPress={handleChat} disabled={isSendingDisabled}>
+            <Feather name="send" size={25} color={isSendingDisabled ? 'gray' : 'black'} />
           </TouchableOpacity>
         </View>
       </View>
