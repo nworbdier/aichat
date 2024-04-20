@@ -1,7 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import OpenAI from 'openai';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -16,12 +13,17 @@ import {
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
-  const [selectedModel, setSelectedModel] = useState('openai'); // State to track the selected model
+  const [selectedModel, setSelectedModel] = useState('ChatGPT'); // State to track the selected model
   const flatListRef = useRef(null);
 
   // Initialize instances with API key
-  const anthropic = new Anthropic({ apiKey: process.env.EXPO_PUBLIC_CLAUDE_API_KEY });
-  const openai = new OpenAI({ apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY });
+  const openRouterKey = process.env.EXPO_PUBLIC_OPEN_ROUTER_API_KEY;
+
+  const models = {
+    ChatGPT: 'openai/gpt-3.5-turbo',
+    Claude: 'anthropic/claude-3-haiku',
+    Llama: 'meta-llama/llama-3-8b-instruct:nitro',
+  };
 
   // Function to load messages from AsyncStorage when component mounts
   const loadMessages = async () => {
@@ -36,7 +38,7 @@ const ChatScreen = () => {
   };
 
   // Function to save messages to AsyncStorage
-  const saveMessages = async (messagesToSave) => {
+  const saveMessages = async (messagesToSave: { user: boolean; content: any }[]) => {
     try {
       await AsyncStorage.setItem('messages', JSON.stringify(messagesToSave));
     } catch (error) {
@@ -51,73 +53,37 @@ const ChatScreen = () => {
 
   const handleChat = async () => {
     try {
-      let completion;
-      let response;
-      if (selectedModel === 'openai') {
-        // Use selectedModel instead of the model parameter
-        completion = await openai.chat.completions.create({
-          model: 'gpt-3.5-turbo',
-          temperature: 0,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a helpful assistant!"',
-            },
-            {
-              role: 'user',
-              content: userInput,
-            },
-          ],
-        });
-      } else if (selectedModel === 'anthropic') {
-        // Use selectedModel instead of the model parameter
-        if (userInput.trim() !== '') {
-          // Check if userInput is not empty or whitespace
-          completion = await anthropic.messages.create({
-            model: 'claude-3-haiku-20240307',
-            max_tokens: 1000,
-            temperature: 0,
-            system: 'You are a helpful assistant!',
-            messages: [
-              {
-                role: 'user',
-                content: userInput,
-              },
-            ],
-          });
-        }
-      } else if (selectedModel === 'ollama') {
-        // Make request to ollama API
-        response = await axios.post('http://localhost:11434/api/chat', {
-          model: 'llama3',
-          messages: [
-            {
-              role: 'user',
-              content: userInput,
-            },
-          ],
-          stream: false,
-        });
+      const model = models[selectedModel]; // Get the model based on selectedModel
+      const url = 'https://openrouter.ai/api/v1/chat/completions';
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openRouterKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: userInput }],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text(); // Get the error message from the response body
+        throw new Error(`Network response was not ok: ${response.status} - ${errorMessage}`);
       }
+
+      const responseData = await response.json();
 
       const newMessage = {
         user: true,
         content: userInput,
       };
 
-      let responseMessage;
-      if (selectedModel === 'ollama') {
-        // Use response directly for 'ollama' model
-        responseMessage = {
-          user: false,
-          content: response.data.message.content,
-        };
-      } else {
-        responseMessage = {
-          user: false,
-          content: completion.choices[0].message.content,
-        };
-      }
+      const responseMessage = {
+        user: false,
+        content: responseData.choices[0].message.content.trim(), // Trim leading whitespace
+      };
 
       const updatedMessages = [...messages, newMessage, responseMessage];
       setMessages(updatedMessages);
@@ -150,9 +116,9 @@ const ChatScreen = () => {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <View style={styles.content}>
         <View style={styles.buttonContainer}>
-          <Button title="ChatGPT" onPress={() => setSelectedModel('openai')} />
-          <Button title="Claude" onPress={() => setSelectedModel('anthropic')} />
-          <Button title="Ollama" onPress={() => setSelectedModel('ollama')} />
+          <Button title="ChatGPT" onPress={() => setSelectedModel('ChatGPT')} />
+          <Button title="Claude" onPress={() => setSelectedModel('Claude')} />
+          <Button title="Llama" onPress={() => setSelectedModel('Llama')} />
         </View>
         <Text style={styles.selectedModelHeader}>{selectedModel}</Text>
         <FlatList
