@@ -8,13 +8,15 @@ import {
   FlatList,
   StyleSheet,
   KeyboardAvoidingView,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
-  const [selectedModel, setSelectedModel] = useState('ChatGPT'); // State to track the selected model
   const flatListRef = useRef(null);
+  const [modalVisible, setModalVisible] = useState(false); // State to control modal visibility
 
   // Initialize instances with API key
   const openRouterKey = process.env.EXPO_PUBLIC_OPEN_ROUTER_API_KEY;
@@ -24,6 +26,8 @@ const ChatScreen = () => {
     Claude: 'anthropic/claude-3-haiku',
     Llama: 'meta-llama/llama-3-8b-instruct:nitro',
   };
+
+  const [selectedModel, setSelectedModel] = useState('ChatGPT'); // State to track the selected model
 
   // Function to load messages from AsyncStorage when component mounts
   const loadMessages = async () => {
@@ -38,7 +42,7 @@ const ChatScreen = () => {
   };
 
   // Function to save messages to AsyncStorage
-  const saveMessages = async (messagesToSave: { user: boolean; content: any }[]) => {
+  const saveMessages = async (messagesToSave) => {
     try {
       await AsyncStorage.setItem('messages', JSON.stringify(messagesToSave));
     } catch (error) {
@@ -115,12 +119,12 @@ const ChatScreen = () => {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <View style={styles.content}>
-        <View style={styles.buttonContainer}>
-          <Button title="ChatGPT" onPress={() => setSelectedModel('ChatGPT')} />
-          <Button title="Claude" onPress={() => setSelectedModel('Claude')} />
-          <Button title="Llama" onPress={() => setSelectedModel('Llama')} />
+        <View style={styles.pickerContainer}>
+          <Text style={styles.selectedModel}>{selectedModel}</Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.pickerButton}>
+            <Text style={{ fontSize: 16 }}>Model ▼</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.selectedModelHeader}>{selectedModel}</Text>
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -138,6 +142,28 @@ const ChatScreen = () => {
           <Button title="Clear" onPress={handleClearChat} />
         </View>
       </View>
+
+      {/* Model selection modal */}
+      <Modal
+        animationType="slide"
+        transparent
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {Object.keys(models).map((model) => (
+              <TouchableOpacity
+                key={model}
+                onPress={() => {
+                  setSelectedModel(model);
+                  setModalVisible(false);
+                }}>
+                <Text style={styles.modelOption}>{model}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -149,9 +175,38 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
     paddingHorizontal: 20,
   },
-  selectedModelHeader: {
+  pickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  selectedModel: {
     fontWeight: 'bold',
-    fontSize: 24,
+    fontSize: 25,
+  },
+  pickerButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#E5E5EA',
+    borderRadius: 5,
+  },
+  modalContainer: {
+    position: 'absolute',
+    bottom: 0,
+    height: '50%',
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  modalContent: {
+    padding: 20,
+  },
+  modelOption: {
+    fontSize: 20,
+    paddingVertical: 10,
+    fontWeight: 'bold',
   },
   messageContainer: {
     padding: 10,
@@ -185,11 +240,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: '#CCCCCC',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
   },
 });
 
