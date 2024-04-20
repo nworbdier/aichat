@@ -27,6 +27,7 @@ const ChatScreen = () => {
     ChatGPT: 'openai/gpt-3.5-turbo',
     Claude: 'anthropic/claude-3-haiku',
     Llama: 'meta-llama/llama-3-8b-instruct:nitro',
+    CodeLlama: 'meta-llama/codellama-34b-instruct',
   };
 
   const [selectedModel, setSelectedModel] = useState('Llama'); // State to track the selected model
