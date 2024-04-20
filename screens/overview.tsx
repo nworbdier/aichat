@@ -202,7 +202,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: 20,
+    marginBottom: 20,
     paddingHorizontal: 20,
   },
   selectedModel: {
