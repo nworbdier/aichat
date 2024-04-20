@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState, useRef, useEffect } from 'react';
@@ -167,14 +167,18 @@ const ChatScreen = () => {
         />
         <View style={styles.divider} />
         <View style={styles.inputContainer}>
+          <TouchableOpacity onPress={handleClearChat}>
+            <Feather name="trash-2" size={25} color="black" />
+          </TouchableOpacity>
           <TextInput
             style={styles.input}
             value={userInput}
             onChangeText={setUserInput}
             placeholder="Type your message here..."
           />
-          <Button title="Send" onPress={handleChat} />
-          <Button title="Clear" onPress={handleClearChat} />
+          <TouchableOpacity onPress={handleChat}>
+            <Feather name="send" size={25} color="black" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -309,7 +313,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 5,
-    paddingHorizontal: 20,
+    paddingHorizontal: 25,
   },
   divider: {
     flexDirection: 'row',
@@ -321,10 +325,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    marginRight: 10,
+    marginHorizontal: 10,
     padding: 10,
     backgroundColor: '#FFFFFF',
-    borderRadius: 5,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#CCCCCC',
   },
