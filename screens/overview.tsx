@@ -32,7 +32,7 @@ const ChatScreen = () => {
     'codellama-34b-instruct': 'meta-llama/codellama-34b-instruct',
   };
 
-  const [selectedModel, setSelectedModel] = useState('Llama'); // State to track the selected model
+  const [selectedModel, setSelectedModel] = useState('llama-3-8b-instruct'); // State to track the selected model
 
   // Function to load messages from AsyncStorage when component mounts
   const loadMessages = async () => {
