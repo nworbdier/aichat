@@ -33,6 +33,8 @@ const ChatScreen = () => {
     'llama-3-8b-instruct': 'meta-llama/llama-3-8b-instruct:nitro',
     'codellama-34b-instruct': 'meta-llama/codellama-34b-instruct',
     'gemini-pro': 'google/gemini-pro',
+    'perplexity-sonar-7B': 'perplexity/sonar-small-chat',
+    'perplexity-sonar-7B-online': 'perplexity/sonar-small-online',
     'perplexity-sonar-8x7B': 'perplexity/sonar-medium-chat',
     'perplexity-sonar-8x7B-online': 'perplexity/sonar-medium-online',
   };
@@ -252,7 +254,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 10,
     paddingHorizontal: 25,
   },
   settingsButton: {
@@ -335,12 +337,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 5,
-    paddingHorizontal: 25,
-  },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -349,9 +345,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#CCCCCC',
   },
+  inputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    padding: 5,
+  },
   input: {
-    flex: 1,
-    marginHorizontal: 10,
+    width: '75%',
     padding: 10,
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
